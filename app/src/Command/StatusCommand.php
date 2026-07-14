@@ -54,7 +54,9 @@ class StatusCommand extends Command
             ];
         }
 
-        var_dump($data);
+        foreach ($data as $row) {
+            $output->writeln(sprintf('%s: %s / %s (%s)', $row['Source Name'], $row['Events Caught'], $row['Max Events'], $row['Progress']));
+        }
 
         return Command::SUCCESS;
     }

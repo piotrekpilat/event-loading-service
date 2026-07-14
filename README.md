@@ -9,6 +9,7 @@ Run the following command to build the environment, install dependencies, and st
 ```bash
 make start
 ```
+You can also use `make status` to check the current status of fetched events.
 
 ## Architecture Notes & Deduplication Limitations
 The current implementation uses Redis with a TTL for deduplication, so long-term data integrity in a production environment ultimately relies on a `UNIQUE` constraint in the main database to prevent duplicate inserts if the cache is lost.
