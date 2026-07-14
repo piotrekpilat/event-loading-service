@@ -1,0 +1,60 @@
+# yaml-language-server: $schema=../vendor/symfony/dependency-injection/Loader/schema/services.schema.json
+
+parameters:
+    redis_host: '%env(REDIS_HOST)%'
+    redis_port: '%env(int:REDIS_PORT)%'
+    circuit_breaker.max_failures: '%env(int:CIRCUIT_BREAKER_MAX_FAILURES)%'
+    circuit_breaker.retry_timeout: '%env(int:CIRCUIT_BREAKER_RETRY_TIMEOUT)%'
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/Loader/SloppyMockEventSource.php'
+
+    Redis:
+        class: Redis
+        calls:
+            - [connect, ['%redis_host%', '%redis_port%']]
+
+    App\Loader\RedisSourceStateManager:
+        arguments:
+            $redis: '@Redis'
+            $failureThreshold: '%circuit_breaker.max_failures%'
+            $retryTimeout: '%circuit_breaker.retry_timeout%'
+
+    App\Loader\SourceStateManagerInterface: '@App\Loader\RedisSourceStateManager'
+    
+    App\Command\LoadEventsCommand:
+        arguments:
+            $sources: !tagged_iterator app.event_source
+            
+    App\Command\StatusCommand:
+        arguments:
+            $sources:
+                - '@api_source_a'
+                - '@api_source_b'
+            
+    App\MessageHandler\ProcessSourceMessageHandler:
+        arguments:
+            $sources: !tagged_iterator app.event_source
+    
+    App\Loader\EventStorageInterface: '@App\Loader\DatabaseEventStorage'
+
+    api_source_a:
+        class: App\Loader\SloppyMockEventSource
+        arguments:
+            $name: 'SourceA'
+            $maxEvents: 2500
+        tags: ['app.event_source']
+
+    api_source_b:
+        class: App\Loader\SloppyMockEventSource
+        arguments:
+            $name: 'SourceB'
+            $maxEvents: 1500
+        tags: ['app.event_source']
