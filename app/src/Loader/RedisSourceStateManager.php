@@ -24,7 +24,7 @@ class RedisSourceStateManager implements SourceStateManagerInterface
 
     public function releaseLock(string $sourceName): void
     {
-        $this->redis->delete("source_lock:{$sourceName}");
+        $this->redis->del("source_lock:{$sourceName}");
     }
 
     public function isAllowed(string $sourceName, int $intervalMilliseconds): bool
@@ -42,7 +42,7 @@ class RedisSourceStateManager implements SourceStateManagerInterface
     {
 
         $stateKey = self::PREFIX_STATE . $sourceName;
-        $this->redis->delete(self::PREFIX_FAILURES . $sourceName, $stateKey);
+        $this->redis->del(self::PREFIX_FAILURES . $sourceName, $stateKey);
     }
 
     public function recordFailure(string $sourceName): void
@@ -58,7 +58,7 @@ class RedisSourceStateManager implements SourceStateManagerInterface
         if ($failures >= $this->failureThreshold) {
             // open circuit breaker
             $this->redis->set($stateKey, self::STATE_OPEN, ['EX' => $this->retryTimeout]);
-            $this->redis->delete($failuresKey);
+            $this->redis->del($failuresKey);
         }
     }
 

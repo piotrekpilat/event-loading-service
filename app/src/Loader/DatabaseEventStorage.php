@@ -24,5 +24,14 @@ class DatabaseEventStorage implements EventStorageInterface
             $events[0]->getData()['source'] ?? 'unknown',
             end($events)->getId()
         ), ['events' => array_map(fn($event) => ['id' => $event->getId(), 'data' => $event->getData()], $events)]);
+
+        $logPath = __DIR__ . '/../../var/saved_events.jsonl';
+        $file = fopen($logPath, 'a');
+        if ($file) {
+            foreach ($events as $event) {
+                fwrite($file, json_encode(['id' => $event->getId(), 'data' => $event->getData()]) . PHP_EOL);
+            }
+            fclose($file);
+        }
     }
 }

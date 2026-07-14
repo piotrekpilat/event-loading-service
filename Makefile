@@ -12,7 +12,7 @@ start: destroy build composer-install execute ## Destroys env, builds, installs 
 
 execute: clean-redis ## Runs the event loader via Symfony Messenger
 	docker compose run --rm php php bin/console app:load-events -v
-	docker compose run --rm php php bin/console messenger:consume async -v
+	docker compose run --rm php php bin/console messenger:consume async -vv
 
 build: ## Builds Docker images
 	docker compose build
