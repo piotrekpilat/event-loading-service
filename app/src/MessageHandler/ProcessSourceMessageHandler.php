@@ -43,7 +43,7 @@ class ProcessSourceMessageHandler
         }
 
         try {
-            echo sprintf("[%s] Processing source %s\n", date('Y-m-d H:i:s'), $sourceName);
+            $this->logger->info(sprintf("Processing source %s", $sourceName));
             $this->processSource($source, $sourceName);
         } finally {
             // TODO: maybe change to normal cron later?? 
@@ -77,7 +77,7 @@ class ProcessSourceMessageHandler
             } catch (\Throwable $e) {
                 $this->stateManager->recordFailure($sourceName);
                 $this->logger->error("Source {$sourceName} failed!!! msg: " . $e->getMessage(), ['exception' => $e]);
-                // throw $e; // don't throw, just exit
+
                 return;
             }
 
@@ -99,7 +99,7 @@ class ProcessSourceMessageHandler
 
                 $seenIds[$eId] = true;
                 if ($eId > $maxId) {
-                    $maxId = $eId; // max() was acting weird here before
+                    $maxId = $eId;
                 }
                 $validEvents[] = $event;
             }
@@ -107,7 +107,7 @@ class ProcessSourceMessageHandler
             if (!empty($validEvents)) {
                 $this->storage->saveEvents($validEvents);
                 $eventIds = array_map(function($e) { return $e->getId(); }, $validEvents);
-                echo sprintf("[%s] Saved %d events for source %s (IDs: %s)\n", date('Y-m-d H:i:s'), count($validEvents), $sourceName, implode(', ', $eventIds));
+                $this->logger->info(sprintf("Saved %d events for source %s (IDs: %s)", count($validEvents), $sourceName, implode(', ', $eventIds)));
             }
 
             if ($maxId > $lastEventId) {

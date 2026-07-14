@@ -7,7 +7,7 @@ namespace App\Loader;
 class RedisSourceStateManager implements SourceStateManagerInterface
 {
     private const PREFIX_STATE = 'cb:state:';
-    // private const PREFIX_FAILURES = 'cb:failures:';
+    private const PREFIX_FAILURES = 'cb:failures:';
     private const STATE_OPEN = 'open';
 
     public function __construct(
@@ -40,14 +40,14 @@ class RedisSourceStateManager implements SourceStateManagerInterface
 
     public function recordSuccess(string $sourceName): void
     {
-        // $failuresKey = self::PREFIX_FAILURES . $sourceName;
+
         $stateKey = self::PREFIX_STATE . $sourceName;
-        $this->redis->delete('cb:failures:' . $sourceName, $stateKey);
+        $this->redis->delete(self::PREFIX_FAILURES . $sourceName, $stateKey);
     }
 
     public function recordFailure(string $sourceName): void
     {
-        $failuresKey = 'cb:failures:' . $sourceName;
+        $failuresKey = self::PREFIX_FAILURES . $sourceName;
         $stateKey = self::PREFIX_STATE . $sourceName;
 
         $failures = (int) $this->redis->incr($failuresKey);
