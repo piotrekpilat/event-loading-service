@@ -1,0 +1,16 @@
+services:
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./app:/app
+    depends_on:
+      - redis
+    tty: true
+    environment:
+      REDIS_URL: redis://redis:6379
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
